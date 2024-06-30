@@ -2,7 +2,6 @@ package edu.put.pw.hpiggwdc;
 
 /**
  * Hello world!
- *
  */
 public class App {
     public static void main(String[] args) {
