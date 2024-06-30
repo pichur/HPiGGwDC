@@ -1,0 +1,5 @@
+{
+    "java.format.settings.url": ".vscode/java-formatter.xml",
+    "java.dependency.packagePresentation": "hierarchical",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
