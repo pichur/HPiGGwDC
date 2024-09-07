@@ -14,18 +14,26 @@ public class App {
 	
 	public static void main(String[] args) {
         int timeLimit = 1;
+        boolean bf = false;
+        
+        int max_iter   = 100;
+        int nv_start   =  20;
+        int nv_end     =  30;
+        double d_start = 0.30;
+        double d_end   = 0.40;
+        double d_step  = 0.01;
         
     	Solver<Solution> tabuSearchSolver = new SolverBuilder()
     			.timeLimit(timeLimit)
     			.mode(Mode.TABU_SEARCH)
     			.build();
     	
-    	Solver<Solution> bruteForceSolver = new SolverBuilder()
+    	Solver<Solution> bruteForceSolver = bf ? new SolverBuilder()
     			.timeLimit(timeLimit)
     			.mode(Mode.BRUTE_FORCE)
-    			.build();
+    			.build() : null;
     	
-    	String file = "C:/tmp/hpiggwdc/info_" + getCurrentDateTime() + ".csv";
+    	String file = "out/info_" + getCurrentDateTime() + ".csv";
         String info = "";
         info += "iter; ";
         info += "numVertices; ";
@@ -34,19 +42,23 @@ public class App {
         info += "edgeProbability; ";
         info += "TS_D_ok; ";
         info += "TS_D_time; ";
-        info += "BF_D_ok; ";
-        info += "BF_D_time; ";
+        if (bf) {
+            info += "BF_D_ok; ";
+            info += "BF_D_time; ";
+        }
         info += "TS_R_ok; ";
         info += "TS_R_time; ";
-        info += "BF_R_ok; ";
-        info += "BF_R_time; ";
+        if (bf) {
+            info += "BF_R_ok; ";
+            info += "BF_R_time; ";
+        }
         
         System.out.println(info);
         writeLineToFile(file, info);
     	//run(file, 10, 1, tabuSearchSolver, bruteForceSolver);
-    	for (int iter = 0; iter < 10; iter++) {
-	    	for (int numVertices = 5; numVertices <= 25; numVertices++) {
-	    		for (double distance = 0.3; distance < 1.55; distance += 0.1) {
+    	for (int iter = 0; iter < max_iter; iter++) {
+	    	for (int numVertices = nv_start; numVertices < nv_end; numVertices++) {
+	    		for (double distance = d_start; distance < d_end; distance += d_step) {
 	    			run(file, iter, numVertices, distance, tabuSearchSolver, bruteForceSolver);
 	    		}
 			}
@@ -60,17 +72,20 @@ public class App {
         
         // Create the unsolved solution
         Solution tabuSearchSolutionD = new Solution(graphD, true );
-        Solution bruteForceSolutionD = new Solution(graphD, false);
-
         Solution tabuSearchSolutionR = new Solution(graphR, true );
-        Solution bruteForceSolutionR = new Solution(graphR, false);
         
-        // Solve the problem
         tabuSearchSolutionD = tabuSearchSolver.solve(tabuSearchSolutionD);
-        bruteForceSolutionD = bruteForceSolver.solve(bruteForceSolutionD);
         tabuSearchSolutionR = tabuSearchSolver.solve(tabuSearchSolutionR);
-        bruteForceSolutionR = bruteForceSolver.solve(bruteForceSolutionR);
         
+        Solution bruteForceSolutionD = null;
+        Solution bruteForceSolutionR = null;
+        if (bruteForceSolver != null) {
+            bruteForceSolutionD = new Solution(graphD, false);
+            bruteForceSolutionR = new Solution(graphR, false);
+            
+            bruteForceSolutionD = bruteForceSolver.solve(bruteForceSolutionD);
+            bruteForceSolutionR = bruteForceSolver.solve(bruteForceSolutionR);
+        }
         // Print the result
         
         //graphD.show();
@@ -87,14 +102,22 @@ public class App {
         info += (int)Math.round(100 * distance) + "; ";
         info += graphD.getNumEdges() + "; ";
         info += (int)Math.round(100 * graphD.getEdgeProbability()) + "; ";
+        
         info += (tabuSearchSolutionD.ok() ? 1 : 0) + "; ";
         info += tabuSearchSolutionD.getTimeMillisSpent() + "; ";
-        info += (bruteForceSolutionD.ok() ? 1 : 0) + "; ";
-        info += bruteForceSolutionD.getTimeMillisSpent() + "; ";
+        
+        if (bruteForceSolver != null) {
+            info += (bruteForceSolutionD.ok() ? 1 : 0) + "; ";
+            info += bruteForceSolutionD.getTimeMillisSpent() + "; ";
+        }
+        
         info += (tabuSearchSolutionR.ok() ? 1 : 0) + "; ";
         info += tabuSearchSolutionR.getTimeMillisSpent() + "; ";
-        info += (bruteForceSolutionR.ok() ? 1 : 0) + "; ";
-        info += bruteForceSolutionR.getTimeMillisSpent() + "; ";
+        
+        if (bruteForceSolver != null) {
+            info += (bruteForceSolutionR.ok() ? 1 : 0) + "; ";
+            info += bruteForceSolutionR.getTimeMillisSpent() + "; ";
+        }
         
         System.out.println(info);
         writeLineToFile(file, info);
